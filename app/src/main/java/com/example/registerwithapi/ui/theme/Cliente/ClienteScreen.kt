@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,20 +30,16 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.registerwithapi.data.remote.dto.ClienteDto
-import com.example.registerwithapi.util.Resource
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
@@ -175,55 +170,6 @@ fun CustomOutlinedTextField(
         ),
         keyboardOptions = KeyboardOptions.Default.copy(imeAction = imeAction)
     )
-}
-
-@Composable
-fun Consult(clientes: List<ClienteDto>) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        Text(text = "Lista de clientes", style = MaterialTheme.typography.titleMedium)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        LazyColumn(modifier = Modifier.fillMaxWidth()) {
-            items(clientes) { cliente ->
-                ClienteItem(cliente)
-            }
-        }
-    }
-}
-
-@Composable
-fun ClienteItem(cliente: ClienteDto, viewModel: ClienteViewModel = hiltViewModel()) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(text = cliente.nombres, style = MaterialTheme.typography.titleMedium)
-            Text(text = cliente.direccion, style = MaterialTheme.typography.titleMedium)
-            Text(text = cliente.rnc, style = MaterialTheme.typography.titleMedium)
-            Text(
-                text = cliente.limiteCredito.toString(),
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            Button(
-                onClick = {
-                    cliente.clienteId?.let { viewModel.deleteCliente(it, cliente) }
-                }
-            ) {
-                Text(text = "Eliminar")
-            }
-        }
-    }
 }
 
 
