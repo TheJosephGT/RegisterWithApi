@@ -50,7 +50,6 @@ import kotlinx.coroutines.flow.collectLatest
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun ClienteScreen(viewModel: ClienteViewModel = hiltViewModel()) {
-    val clientesResource by viewModel.clientes.collectAsState(initial = Resource.Loading())
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
@@ -107,6 +106,7 @@ fun ClienteScreen(viewModel: ClienteViewModel = hiltViewModel()) {
                 value = viewModel.limiteCredito.toString(),
                 label = { Text(text = "Limite credito") },
                 singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
                 onValueChange = {
                     val newValue = it.toIntOrNull()
                     if (newValue != null) {
@@ -129,11 +129,6 @@ fun ClienteScreen(viewModel: ClienteViewModel = hiltViewModel()) {
             {
                 Icon(imageVector = Icons.Default.CheckCircle, contentDescription = "Guardar")
                 Text(text = "Guardar")
-            }
-
-            val clientes = clientesResource.data
-            if (clientes != null) {
-                Consult(clientes)
             }
         }
     }

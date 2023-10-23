@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.registerwithapi.ui.theme.Cliente.ClienteScreen
+import com.example.registerwithapi.ui.theme.Navigation.AppScreen
 import com.example.registerwithapi.ui.theme.RegisterWithApiTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -26,6 +27,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     ClienteScreen()
+                    AppScreen()
                 }
             }
         }
