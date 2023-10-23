@@ -40,5 +40,4 @@ object AppModule {
         return ClienteRepository(clienteApi)
     }
 
-
 }

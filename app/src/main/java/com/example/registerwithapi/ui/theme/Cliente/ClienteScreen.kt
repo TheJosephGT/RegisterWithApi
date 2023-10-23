@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,6 +38,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -48,7 +50,7 @@ import kotlinx.coroutines.flow.collectLatest
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun ClienteScreen(viewModel: ClienteViewModel = hiltViewModel()) {
-    val clientes by viewModel.clientes.collectAsState()
+    val clientesResource by viewModel.clientes.collectAsState(initial = Resource.Loading())
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
@@ -111,7 +113,10 @@ fun ClienteScreen(viewModel: ClienteViewModel = hiltViewModel()) {
                         viewModel.limiteCredito = newValue
                     }
                 },
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next, keyboardType = KeyboardType.Number)
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Number
+                )
             )
 
             OutlinedButton(onClick = {
@@ -125,10 +130,15 @@ fun ClienteScreen(viewModel: ClienteViewModel = hiltViewModel()) {
                 Icon(imageVector = Icons.Default.CheckCircle, contentDescription = "Guardar")
                 Text(text = "Guardar")
             }
+
+            val clientes = clientesResource.data
+            if (clientes != null) {
+                Consult(clientes)
+            }
         }
     }
 
-    //
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -156,7 +166,7 @@ fun CustomOutlinedTextField(
     onValueChange: (String) -> Unit,
     label: String,
     isError: Boolean,
-    imeAction: ImeAction
+    imeAction: ImeAction,
 ) {
     OutlinedTextField(
         value = value,
@@ -205,7 +215,10 @@ fun ClienteItem(cliente: ClienteDto, viewModel: ClienteViewModel = hiltViewModel
             Text(text = cliente.nombres, style = MaterialTheme.typography.titleMedium)
             Text(text = cliente.direccion, style = MaterialTheme.typography.titleMedium)
             Text(text = cliente.rnc, style = MaterialTheme.typography.titleMedium)
-            Text(text = cliente.limiteCredito.toString(), style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = cliente.limiteCredito.toString(),
+                style = MaterialTheme.typography.titleMedium
+            )
 
             Button(
                 onClick = {
