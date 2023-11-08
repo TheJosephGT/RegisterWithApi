@@ -16,6 +16,11 @@ sealed class Destination(val route: String, val icon: ImageVector, val title: St
         title = "Consulta"
     )
 
+    object UpdateRegistroClientes : Destination(
+        route = "Registro_Update", icon = Icons.Filled.Email,
+        title = "Registro_Update"
+    )
+
     companion object {
         val toList = listOf(RegistroClientes, ConsultaClientes)
     }

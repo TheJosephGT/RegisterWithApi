@@ -11,6 +11,7 @@ import com.example.registerwithapi.data.repository.ClienteRepository
 import com.example.registerwithapi.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -19,18 +20,26 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 data class ClienteListState(
     val isLoading: Boolean = false,
-    val cliente: List<ClienteDto> = emptyList(),
+    val clientes: List<ClienteDto> = emptyList(),
     val error: String = "",
+)
+
+data class ClienteState(
+    val isLoading: Boolean = false,
+    val cliente: ClienteDto? = null,
+    val error: String = ""
 )
 
 @HiltViewModel
 class ClienteViewModel @Inject constructor(
     private val clienteRepository: ClienteRepository,
 ) : ViewModel() {
-
+    var clienteId by mutableStateOf(1)
     var nombres by mutableStateOf("")
     var rnc by mutableStateOf("")
     var direccion by mutableStateOf("")
@@ -60,28 +69,56 @@ class ClienteViewModel @Inject constructor(
         }
     }
 
-    private var _state = mutableStateOf(ClienteListState())
-    val state: State<ClienteListState> = _state
-
     val clientes: StateFlow<Resource<List<ClienteDto>>> = clienteRepository.getCliente().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = Resource.Loading()
     )
 
+    var uiState = MutableStateFlow(ClienteListState())
+        private set
+    var uiStateCliente = MutableStateFlow(ClienteState())
+        private set
+
     init {
         clienteRepository.getCliente().onEach { result ->
             when (result) {
                 is Resource.Loading -> {
-                    _state.value = ClienteListState(isLoading = true)
+                    uiState.update { it.copy(isLoading = true) }
                 }
 
                 is Resource.Success -> {
-                    _state.value = ClienteListState(cliente = result.data ?: emptyList())
+                    uiState.update {
+                        it.copy(clientes = result.data ?: emptyList())
+                    }
                 }
 
                 is Resource.Error -> {
-                    _state.value = ClienteListState(error = result.message ?: "Error desconocido")
+                    uiState.update { it.copy(error = result.message ?: "Error desconocido") }
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    fun getClienteById(id: Int) {
+        clienteId = id
+        limpiar()
+        clienteRepository.getTicketsId(clienteId).onEach { result ->
+            when (result) {
+                is Resource.Loading -> {
+                    uiStateCliente.update { it.copy(isLoading = true) }
+                }
+                is Resource.Success -> {
+                    uiStateCliente.update {
+                        it.copy(cliente = result.data)
+                    }
+                    nombres = uiStateCliente.value.cliente!!.nombres
+                    rnc = uiStateCliente.value.cliente!!.rnc
+                    direccion = uiStateCliente.value.cliente!!.direccion
+                    limiteCredito = uiStateCliente.value.cliente!!.limiteCredito!!
+                }
+                is Resource.Error -> {
+                    uiStateCliente.update { it.copy(error = result.message ?: "Error desconocido") }
                 }
             }
         }.launchIn(viewModelScope)
@@ -100,7 +137,21 @@ class ClienteViewModel @Inject constructor(
         }
     }
 
-    fun deleteCliente(clienteId: Int, cliente: ClienteDto){
+    fun updateCliente() {
+        viewModelScope.launch {
+            clienteRepository.putCliente(
+                clienteId, ClienteDto(
+                    clienteId = clienteId,
+                    nombres = nombres,
+                    rnc = rnc,
+                    direccion = direccion,
+                    limiteCredito = limiteCredito
+                )
+            )
+        }
+    }
+
+    fun deleteCliente(clienteId: Int, cliente: ClienteDto) {
         viewModelScope.launch {
             clienteRepository.deleteCliente(clienteId, cliente)
         }

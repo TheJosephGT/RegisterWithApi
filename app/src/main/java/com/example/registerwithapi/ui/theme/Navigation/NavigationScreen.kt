@@ -25,11 +25,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.registerwithapi.R
 import com.example.registerwithapi.ui.theme.Cliente.ClienteScreen
+import com.example.registerwithapi.ui.theme.Cliente.ClienteScreenEdit
 import com.example.registerwithapi.ui.theme.Cliente.ClienteViewModel
 import com.example.registerwithapi.ui.theme.Cliente.Consult
 import com.example.registerwithapi.util.Resource
@@ -40,7 +43,12 @@ import com.example.registerwithapi.util.Resource
 fun AppScreen() {
     val navController = rememberNavController()
     Scaffold(
-        bottomBar = { BottomNavigationBar(navController = navController, appItems = Destination.toList) },
+        bottomBar = {
+            BottomNavigationBar(
+                navController = navController,
+                appItems = Destination.toList
+            )
+        },
         content = { padding ->
             Box(modifier = Modifier.padding(padding)) {
                 AppNavigation(navController = navController)
@@ -49,18 +57,34 @@ fun AppScreen() {
     )
 }
 
+
 @Composable
 fun AppNavigation(navController: NavHostController, viewModel: ClienteViewModel = hiltViewModel()) {
     NavHost(navController, startDestination = Destination.RegistroClientes.route) {
-        composable(Destination.RegistroClientes.route) {
-            ClienteScreen()
-        }
+
         composable(Destination.ConsultaClientes.route) {
             val clientesResource by viewModel.clientes.collectAsState(initial = Resource.Loading())
             val clientes = clientesResource.data
             if (clientes != null) {
-                Consult(clientes)
+                Consult(clientes, navController){
+                        id -> navController.navigate(Destination.UpdateRegistroClientes.route + "/${id}")
+                }
             }
+        }
+
+        composable(
+            route = Destination.UpdateRegistroClientes.route + "/{id}",
+            arguments = listOf(navArgument("id") { type = NavType.IntType })
+        ) { capturar ->
+            val clienteId = capturar.arguments?.getInt("id") ?: 0
+
+            ClienteScreenEdit(clienteId = clienteId, navController = navController) {
+                navController.navigate(Destination.ConsultaClientes.route)
+            }
+        }
+
+        composable(Destination.RegistroClientes.route) {
+            ClienteScreen(navController = navController)
         }
     }
 }
@@ -79,9 +103,11 @@ fun BottomNavigationBar(navController: NavController, appItems: List<Destination
             items(appItems) { appitem ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.clickable {
-                        navController.navigate(appitem.route)
-                    }.padding(horizontal = 8.dp)
+                    modifier = Modifier
+                        .clickable {
+                            navController.navigate(appitem.route)
+                        }
+                        .padding(horizontal = 8.dp)
                 ) {
                     Icon(
                         imageVector = appitem.icon,

@@ -7,10 +7,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -19,28 +17,27 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import com.example.registerwithapi.data.remote.dto.ClienteDto
-import com.example.registerwithapi.ui.theme.Navigation.Destination
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
-fun ClienteScreen(viewModel: ClienteViewModel = hiltViewModel(), navController: NavController) {
+fun ClienteScreenEdit(
+    viewModel: ClienteViewModel = hiltViewModel(),
+    navController: NavController,
+    clienteId: Int,
+    onSaveClick: () -> Unit,
+) {
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
@@ -52,6 +49,11 @@ fun ClienteScreen(viewModel: ClienteViewModel = hiltViewModel(), navController: 
                 )
             }
         }
+    }
+
+    remember {
+        viewModel.getClienteById(clienteId)
+        0
     }
 
     Scaffold(
@@ -70,7 +72,7 @@ fun ClienteScreen(viewModel: ClienteViewModel = hiltViewModel(), navController: 
                 .padding(8.dp)
         ) {
             val keyboardController = LocalSoftwareKeyboardController.current
-            Text(text = "Cliente detalles", style = MaterialTheme.typography.titleMedium)
+            Text(text = "Cliente detalles EDITADO", style = MaterialTheme.typography.titleMedium)
 
             CustomOutlinedTextField(
                 value = viewModel.nombres,
@@ -113,8 +115,9 @@ fun ClienteScreen(viewModel: ClienteViewModel = hiltViewModel(), navController: 
             OutlinedButton(onClick = {
                 keyboardController?.hide()
                 if (viewModel.Validar()) {
-                    viewModel.saveCliente()
                     viewModel.setMessageShown()
+                    viewModel.updateCliente()
+                    onSaveClick()
                     //navController.navigate(Destination.ConsultaClientes.route)
                 }
             }, modifier = Modifier.fillMaxWidth())
@@ -125,48 +128,3 @@ fun ClienteScreen(viewModel: ClienteViewModel = hiltViewModel(), navController: 
         }
     }
 }
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun RefreshAppBar(
-    title: String,
-    onRefreshClick: () -> Unit,
-) {
-    TopAppBar(
-        title = { Text(text = title) },
-        actions = {
-            IconButton(onClick = { onRefreshClick() }) {
-                Icon(
-                    imageVector = Icons.Default.Refresh, contentDescription = "Refresh"
-                )
-            }
-        }
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CustomOutlinedTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    isError: Boolean,
-    imeAction: ImeAction,
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = Modifier.fillMaxWidth(),
-        label = { Text(text = label) },
-        singleLine = true,
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = if (isError) Color.Gray else Color.Red,
-            unfocusedBorderColor = if (isError) Color.Gray else Color.Red
-        ),
-        keyboardOptions = KeyboardOptions.Default.copy(imeAction = imeAction)
-    )
-}
-
-
-
-

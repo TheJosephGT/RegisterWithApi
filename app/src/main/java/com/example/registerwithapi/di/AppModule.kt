@@ -33,11 +33,4 @@ object AppModule {
             .build()
             .create(ClienteApi::class.java)
     }
-
-    @Provides
-    @Singleton
-    fun provideClienteRepository(clienteApi: ClienteApi): ClienteRepository {
-        return ClienteRepository(clienteApi)
-    }
-
 }

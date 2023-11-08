@@ -6,6 +6,7 @@ import com.example.registerwithapi.util.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
+import retrofit2.Response
 import java.io.IOException
 import javax.inject.Inject
 
@@ -26,14 +27,14 @@ class ClienteRepository @Inject constructor(private val api: ClienteApi) {
             emit(Resource.Error(e.message ?: "verificar tu conexion a internet"))
         }
     }
-
-    fun getClienteById(id: Int): Flow<Resource<ClienteDto>> = flow {
+    fun getTicketsId(id: Int): Flow<Resource<ClienteDto>> = flow {
         try {
             emit(Resource.Loading()) //indicar que estamos cargando
 
-            val clientebyId = api.getClienteById(id) //descarga las monedas de internet, se supone quedemora algo
+            val tickets =
+                api.getClienteById(id) //descagar la lista de tickets por el id
 
-            emit(Resource.Success(clientebyId)) //indicar que se cargo correctamente.
+            emit(Resource.Success(tickets)) //indicar que se cargo correctamente
         } catch (e: HttpException) {
             //error general HTTP
             emit(Resource.Error(e.message ?: "Error HTTP GENERAL"))
@@ -43,6 +44,13 @@ class ClienteRepository @Inject constructor(private val api: ClienteApi) {
         }
     }
 
-    suspend fun postCliente(cliente: ClienteDto) = api.postCliente(cliente)
-    suspend fun deleteCliente(id: Int, cliente: ClienteDto) = api.deleteCliente(id, cliente)
+    suspend fun postCliente(cliente: ClienteDto) {
+        api.postCliente(cliente)
+    }
+    suspend fun deleteCliente(id: Int, cliente: ClienteDto) {
+        api.deleteCliente(id, cliente)
+    }
+    suspend fun putCliente(id:Int, cliente: ClienteDto) {
+        api.putCliente(id, cliente)
+    }
 }
